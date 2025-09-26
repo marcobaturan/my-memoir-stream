@@ -21,6 +21,8 @@ export default {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
+          light: "hsl(var(--primary-light))",
+          dark: "hsl(var(--primary-dark))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
@@ -31,12 +33,17 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",
+          light: "hsl(var(--accent-light))",
           foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
@@ -59,9 +66,25 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
+        lg: "var(--radius-lg)",
+        md: "var(--radius)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "var(--radius-xl)",
+      },
+      boxShadow: {
+        'sm': 'var(--shadow-sm)',
+        'md': 'var(--shadow-md)',
+        'lg': 'var(--shadow-lg)',
+        'xl': 'var(--shadow-xl)',
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-accent': 'var(--gradient-accent)',
+        'gradient-subtle': 'var(--gradient-subtle)',
+      },
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       },
       keyframes: {
         "accordion-down": {
