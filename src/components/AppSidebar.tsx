@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Calendar, Search, PlusCircle, User, BookOpen, Tag, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calendar, Search, PlusCircle, User, BookOpen, Tag, Clock, LogOut } from "lucide-react";
 import { EntryEditor } from "@/components/EntryEditor";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,16 +14,54 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { EntryCalendar } from "@/components/EntryCalendar";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const mockUser = {
-  name: "Alex Chen",
-  bio: "Documenting life's beautiful moments, one entry at a time. Coffee enthusiast, weekend photographer, and avid reader.",
-  avatar: "/placeholder.svg"
-};
 
 export function AppSidebar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [editorOpen, setEditorOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error fetching profile:', error);
+    } else {
+      setUserProfile(data);
+    }
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Sign out failed",
+        description: error.message,
+      });
+    }
+  };
+
+  const displayName = userProfile?.full_name || userProfile?.username || user?.email?.split('@')[0] || 'User';
+  const displayBio = userProfile?.bio || "Documenting life's beautiful moments, one entry at a time.";
+  const avatarUrl = userProfile?.profile_picture_url;
 
   return (
     <Sidebar className="border-r border-sidebar-border bg-sidebar">
@@ -31,16 +69,16 @@ export function AppSidebar() {
         {/* User Profile Section */}
         <div className="flex flex-col items-center text-center space-y-4">
           <Avatar className="w-16 h-16 border-2 border-sidebar-primary/20">
-            <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
+            <AvatarImage src={avatarUrl} alt={displayName} />
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-lg font-semibold">
-              {mockUser.name.split(' ').map(n => n[0]).join('')}
+              {displayName.split(' ').map(n => n[0]).join('').toUpperCase()}
             </AvatarFallback>
           </Avatar>
           
           <div className="space-y-2">
-            <h2 className="font-semibold text-sidebar-foreground text-lg">{mockUser.name}</h2>
+            <h2 className="font-semibold text-sidebar-foreground text-lg">{displayName}</h2>
             <p className="text-sm text-sidebar-foreground/70 leading-relaxed max-w-[200px]">
-              {mockUser.bio}
+              {displayBio}
             </p>
           </div>
         </div>
@@ -105,7 +143,16 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
+      <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleSignOut}
+          className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Sign Out
+        </Button>
         <div className="text-xs text-sidebar-foreground/50 text-center">
           Lifelogger v1.0
         </div>
