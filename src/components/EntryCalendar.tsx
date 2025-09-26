@@ -1,22 +1,67 @@
-import { useState } from "react";
+/**
+ * EntryCalendar Component - Interactive Activity Calendar
+ * 
+ * Displays a calendar showing days with journal entries and allows
+ * date-based filtering of entries. Features include:
+ * - Visual indicators for days with entries
+ * - Real-time data integration with Supabase
+ * - Date selection for filtering entries
+ * - Responsive design
+ * 
+ * @component
+ * @author Lifelogger Team
+ * @version 1.0.0
+ */
+
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
+import { useEntries } from "@/hooks/useEntries";
 
-// Mock data for entries on specific dates
-const entryDates = [
-  new Date(2024, 11, 15),
-  new Date(2024, 11, 18),
-  new Date(2024, 11, 22),
-  new Date(2024, 11, 25),
-  new Date(2024, 11, 26),
-];
+/**
+ * Props interface for the EntryCalendar component
+ */
+interface EntryCalendarProps {
+  /** Optional callback when a date is selected */
+  onDateSelect?: (date: Date) => void;
+  /** Currently selected date */
+  selectedDate?: Date;
+}
 
-export function EntryCalendar() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+/**
+ * EntryCalendar Component Implementation
+ */
+export function EntryCalendar({ onDateSelect, selectedDate }: EntryCalendarProps) {
+  const [date, setDate] = useState<Date | undefined>(selectedDate || new Date());
+  const { entries } = useEntries(100); // Load more entries for calendar
+  const [entryDates, setEntryDates] = useState<Date[]>([]);
 
+  /**
+   * Extract dates from entries for calendar highlighting
+   */
+  useEffect(() => {
+    if (entries.length > 0) {
+      const dates = entries.map(entry => new Date(entry.entry_date));
+      setEntryDates(dates);
+    }
+  }, [entries]);
+
+  /**
+   * Checks if a given day has entries
+   */
   const isDayWithEntry = (day: Date) => {
     return entryDates.some(entryDate => 
       entryDate.toDateString() === day.toDateString()
     );
+  };
+
+  /**
+   * Handles date selection
+   */
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    setDate(selectedDate);
+    if (selectedDate && onDateSelect) {
+      onDateSelect(selectedDate);
+    }
   };
 
   return (
@@ -24,7 +69,7 @@ export function EntryCalendar() {
       <Calendar
         mode="single"
         selected={date}
-        onSelect={setDate}
+        onSelect={handleDateSelect}
         className="rounded-md"
         modifiers={{
           hasEntry: isDayWithEntry,
